@@ -24,7 +24,7 @@ def _fetch(query: str, site_id: str, limit: int, offset: int, retries: int = 1):
     for attempt in range(retries + 1):
         try:
             r = requests.get(url, params=params, headers=HEADERS, timeout=12)
-            # Mitigaciones típicas
+            
             if r.status_code in (401, 403, 429, 503):
                 last_err = requests.HTTPError(f"{r.status_code} for {r.url}")
                 time.sleep(1.2 * (attempt + 1))
@@ -42,20 +42,19 @@ def _fetch(query: str, site_id: str, limit: int, offset: int, retries: int = 1):
     return [], {"total": 0, "limit": limit, "offset": offset, "site_used": site_id, "fallback": False}, last_err
 
 def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 24, offset: int = 0):
-    # 1) Intento con el sitio pedido (MLC por defecto)
+    
     results, paging, err = _fetch(query, site_id, limit, offset, retries=1)
     if results:
         return results, paging
 
-    # 2) Fallback automático a MLA si hubo 401/403/429/503 u otro error
-    #    (solo si el sitio original fue MLC)
+
     if paging.get("site_used") == "MLC":
         results2, paging2, err2 = _fetch(query, "MLA", limit, offset, retries=1)
         if results2:
             paging2["fallback"] = True
             return results2, paging2
 
-    # 3) Sin resultados: devuelve vacío, con info útil en paging
+    
     if err:
         print(f"Error MercadoLibre [{paging.get('site_used')}]: {err}")
     return [], paging

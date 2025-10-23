@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:wght@600;700&family=Inter:wght@400;500&display=swap');
+
+:root {
+    --verde-principal:   #1B5E20;
+    --verde-mint:        #81C784;
+    --verde-fondo:       #83d78a;
+    --azul-acento:       #0277BD;
+    --gris-oscuro:       #212121;   
+
+    --blanco:            #FFFFFF;
+    --gris:              #9E9E9E;
+    --fondo:             var(--verde-fondo);    
+
+    --font-titulo:       "Alegreya", serif;
+    --font-subtitulo:    "Alegreya", serif;
+    --font-texto:       "Inter", sans-serif;   
+
+    --fs-titulo:         clamp(2rem, 4rem, 3rem);
+    --fs-subtitulo:      clamp(1.5rem, 3vw, 2.2rem);
+    --fs-texto:          1rem;
+
+    --esp-small:         0.5rem;
+    --esp-medium:        1rem;
+    --esp-large:         2rem;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--fondo);
+}
+.titulo{
+    font-family: var(--font-titulo);
+    font-size: var(--fs-titulo);
+    color: var(--gris-oscuro);
+    
+}
+.contenedor {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    background-color: var(--verde-principal);
+    border-radius:0 0 10% 10%;
+    border-bottom: 10px solid var(--verde-principal);
+}
+.btn{
+    width: auto;
+}
+#logo{
+    display: flex;
+    align-items: center;
+    background-color: var(--blanco);
+    padding: 0.1%;
+    border-radius: 50%;
+    
+}
+
+#home-icon:hover {
+    cursor: pointer;
+    fill: var(--verde-mint);
+    transform: scale(1.1);
+    transition: all 0.2s ease-in-out;
+    filter: drop-shadow(2px 4px 6px black);
+}
+#link_home{
+    text-decoration: none;
+    display: flex;
+}

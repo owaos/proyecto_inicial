@@ -1,0 +1,40 @@
+
+.input-texto{
+    font-family: var(--font-texto);
+    font-size: var(--fs-texto);
+    padding: 1%;
+    border: 2px solid var(--gris);
+    border-radius: 5px;
+    width: 50%;
+    height: 1%;
+}
+
+#main-home{
+    margin-top: 10%;
+    flex-direction: column;
+}
+#boton-busqueda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+#icono-buscar {
+    width: 2rem;
+    height: 2rem;
+    display: block;
+    object-fit: contain;
+    filter: invert(0%) brightness(0%) contrast(100%);
+}
+
+#boton-busqueda:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+    
+    
+}

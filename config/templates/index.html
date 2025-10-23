@@ -1,19 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %} {% endblock %}</title>
+    <title>{% block title %}Mi sitio Django{% endblock %}</title>
+
+    
+    <link rel="stylesheet" href="{% static 'styles/index.css' %}">
+
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <header>
+        <nav class="navbar">
+            <div class="contenedor-logo" id="logo">
+                <img src="{% static 'img/logoGpoint.png' %}" alt="Logo del sitio" height="60">
+            </div>
+                <div class="contenedor-logo" id="home">
+                    <a id="link_home" href="/">
+                        <img src="{% static 'img/house-svg.svg' %}" id="home-icon" alt="Inicio" height="30">
+                    </a>
+                </div>
+        </nav>
+    </header>
+
     <main>
-    {% block content %} 
-    
-    {% endblock %}
+        {% block content %}
+        
+        {% endblock %}
     </main>
 
-    <div class="button">
-        <a href="{% url 'home' %}"></a>
-    </div>
+    <footer>
+        
+    </footer>
 </body>
 </html>

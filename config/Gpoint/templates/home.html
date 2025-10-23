@@ -1,171 +1,20 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Ecológico 🌱</title>
-    <style>
-        body {
-            font-family: system-ui, sans-serif;
-            background: #f7f9fa;
-            margin: 0;
-            padding: 0 1rem;
-        }
-        header {
-            background-color: #2e7d32;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            border-radius: 0 0 12px 12px;
-        }
-        form {
-            display: flex;
-            justify-content: center;
-            margin: 20px auto;
-            max-width: 600px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px 0 0 8px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-        button {
-            background-color: #43a047;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        button:hover {
-            background-color: #2e7d32;
-        }
-        .alert {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px auto;
-            max-width: 800px;
-            text-align: center;
-        }
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-            list-style: none;
-            padding: 0;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #ddd;
-            padding: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.1s ease-in-out;
-        }
-        .card:hover {
-            transform: scale(1.02);
-        }
-        .card img {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .card h3 {
-            font-size: 1rem;
-            margin: 8px 0;
-        }
-        .card p {
-            margin: 4px 0;
-            font-weight: bold;
-            color: #2e7d32;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-            font-size: 0.9rem;
-        }
-        .pagination {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .pagination a {
-            margin: 0 10px;
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .pagination a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
+{% extends 'index.html' %}
+{% load static %}
 
-<header>
-    <h1>Catálogo de Componentes Ecológicos 🌱</h1>
-</header>
+{% block title %}Inicio{% endblock %}
 
-<form method="get">
-    <input type="text" name="q" value="{{ q }}" placeholder="Buscar componente ecológico...">
-    <button type="submit">Buscar</button>
-</form>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'Gpoint/styles/home.css' %}">
+{% endblock %}
 
-{% if paging.fallback %}
-  <div class="alert">
-      Mostrando resultados desde <strong>{{ paging.site_used }}</strong> por un bloqueo temporal en MLC.
-  </div>
-{% endif %}
-
-{% if error %}
-  <div class="alert" style="background:#f8d7da;border-color:#f5c2c7;color:#842029;">
-      Error: {{ error }}
-  </div>
-{% endif %}
-
-{% if results %}
-  <ul class="results">
-    {% for item in results %}
-      <li class="card">
-        {% if item.thumbnail %}
-          <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
-        {% endif %}
-        <h3>{{ item.title }}</h3>
-        <p>${{ item.price }} {{ item.currency_id }}</p>
-        {% if item.shipping and item.shipping.free_shipping %}
-          <small style="color:#388e3c;">✔ Envío gratis</small><br>
-        {% endif %}
-        <a href="{{ item.permalink }}" target="_blank">Ver en Mercado Libre</a>
-      </li>
-    {% endfor %}
-  </ul>
-
-  <div class="pagination">
-    {% if paging.offset|add:paging.limit < paging.total %}
-      <a href="?q={{ q }}&offset={{ paging.offset|add:paging.limit }}">Siguiente »</a>
-    {% endif %}
-    {% if paging.offset|add:"0" > 0 %}
-      {% with prev=paging.offset|add:"-24" %}
-        <a href="?q={{ q }}&offset={{ prev|default:0 }}">« Anterior</a>
-      {% endwith %}
-    {% endif %}
-  </div>
-
-  <footer>
-    <p>Mostrando {{ paging.limit }} de {{ paging.total }} resultados. Fuente: Mercado Libre ({{ paging.site_used }})</p>
-  </footer>
-
-{% else %}
-  <p style="text-align:center;">No se encontraron resultados para <strong>{{ q }}</strong>.</p>
-{% endif %}
-
-</body>
-</html>
+{% block content %}
+<main class="contenedor" id="main-home">
+    <h1 class="titulo" id="home-title">¿Qué estas buscando?</h1>
+    <form action="/search/productos/" method="get" id="form-busqueda" class="contenedor">
+    <input type="text" name="busqueda" placeholder="Buscar..." class="input-texto" id="input-busqueda">
+    <button class="btn" id="boton-busqueda" type="submit">
+        <img src="{% static 'Gpoint/images/search.svg' %}" alt="Buscar" class="svg-icon" id="icono-buscar">
+    </button>
+    
+</main>
+{% endblock %}

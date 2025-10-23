@@ -1,0 +1,26 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'Gpoint/styles/search.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class ="contenedor" id="section_productos">
+        <h1 class ="titulo" id="search-title">Resultados de la búsqueda</h1>
+            <div class="contenedor" id="contenedor_productos">
+                {% for producto in productos %}
+                    <div class="card_producto">
+                        <img src="{% static producto.imagen %}" alt="{{ producto.nombre }}" class="imagen_producto">
+                        <h2 class="nombre_producto">{{ producto.nombre }}</h2>
+                        <p class="descripcion_producto">{{ producto.descripcion }}</p>
+                        <p class="precio_producto">${{ producto.precio }}</p>
+                    </div>
+                {% empty %}
+                    <p>No se encontraron productos que coincidan con tu búsqueda.</p>
+                {% endfor %}
+            </div>
+    </section>
+{% endblock %}
