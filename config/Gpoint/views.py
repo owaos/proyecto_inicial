@@ -1,5 +1,11 @@
 from django.shortcuts import render,redirect
-from .services.mercadolibre import buscar_items
+#from .services.mercadolibre import buscar_items
+
+from django.http import JsonResponse, HttpResponseServerError
+import Gpoint.services.mercadolibre as ml_service
+
+
+
 #
 # def home(request):
 #     # Si el usuario no busca nada, usamos "mouse" como valor por defecto
@@ -14,7 +20,7 @@ from .services.mercadolibre import buscar_items
 #     return render(
 #         request,
 #         "home.html",
-#         {
+#         {     
 #             "q": q,
 #             "results": results,
 #             "paging": paging,
@@ -65,3 +71,28 @@ def productos(request):
         ]
 
     return render(request, 'search.html', {'productos': productos, 'query': query})
+
+
+def ml_health(request):
+    """
+    GET /ml/health/ -> { ok: true, user_id, site_id }
+    Comprueba que el token es válido y que podemos consultar /users/me.
+    """
+    try:
+        me = ml_service.get_me()
+        return JsonResponse({"ok": True, "user_id": me.get("id"), "site_id": me.get("site_id")})
+    except Exception as e:
+        return HttpResponseServerError(f"ML health failed: {e}")
+
+def ml_search_api(request):
+    """
+    GET /api/ml/search/?q=mouse&offset=0
+    Devuelve JSON con paging y results (usa buscar_items).
+    """
+    q = request.GET.get("q", "").strip() or "mouse"
+    offset = int(request.GET.get("offset", 0) or 0)
+    try:
+        results, paging = ml_service.buscar_items(q, limit=24, offset=offset)
+        return JsonResponse({"ok": True, "q": q, "paging": paging, "results": results})
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=500)
