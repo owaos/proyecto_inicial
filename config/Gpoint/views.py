@@ -1,8 +1,8 @@
-from django.shortcuts import render,redirect
-#from .services.mercadolibre import buscar_items
+from django.shortcuts import render, redirect
 
 from django.http import JsonResponse, HttpResponseServerError
-import Gpoint.services.mercadolibre as ml_service
+
+from .services import mercadolibre as ml_service
 
 
 
