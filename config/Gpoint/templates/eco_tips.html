@@ -1,84 +1,23 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Consejos ecológicos</title>
-    <style>
-        :root {
-            --color-fondo-pagina: #cfffe5;    
-            --color-titulo-principal: #1b5e20;      
-            --color-subtitulo: #2e7d32;             
-            --color-fondo-contenedor: #ffffff;       
-            --color-borde-izquierdo: #66bb6a;        
-            --color-titulo-tip: #558b2f;             
-            --color-descripcion-tip: #4e5d52;        
-        }
-
-        /*Fondo*/
-        body {
-            background-color: var(--color-fondo-pagina);
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /*Contenedor*/
-        .eco-tips-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        /*Título principal*/
-        h1 {
-            text-align: center;
-            color: var(--color-titulo-principal);
-        }
-
-        /*Subtítulo*/
-        .eco-subtitulo {
-            text-align: center;
-            color: var(--color-subtitulo);
-            font-size: 1.1em;
-            margin-top: -10px;
-        }
-
-        /*Tarjeta*/
-        .eco-tip {
-            background-color: var(--color-fondo-contenedor);
-            border-left: 6px solid var(--color-borde-izquierdo);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        /*Título consejo*/
-        .eco-tip h3 {
-            margin-top: 0;
-            color: var(--color-titulo-tip);
-        }
-
-        /*Descripción consejo*/
-        .eco-tip p {
-            color: var(--color-descripcion-tip);
-            margin-bottom: 0;
-        }
-    </style>
-</head>
+{% extends "index.html" %}
+{% load static %}
+    {% block title %}Consejos ecológicos{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'Gpoint/styles/eco_tips.css' %}">
+{% endblock %}
+{% block content %}
 <body>
     <div class="eco-tips-container">
-        <h1>🌿 Consejos para un estilo de vida sostenible 🌿</h1>
+        <h1 class="titulo" id="titulo-eco-tips">🌿 Consejos para un estilo de vida sostenible 🌿</h1>
         <p class="eco-subtitulo">Pequeños cambios pueden hacer una gran diferencia en el planeta.</p>
 
         <div style="margin-top: 30px;">
             {% for tip in consejos %}
                 <div class="eco-tip">
-                    <h3>{{ tip.titulo }}</h3>
+                    <h3 class = "subtitulo">{{ tip.titulo }}</h3>
                     <p>{{ tip.descripcion }}</p>
                 </div>
             {% endfor %}
         </div>
     </div>
 </body>
-</html>
+{% endblock %}

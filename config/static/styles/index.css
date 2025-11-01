@@ -4,6 +4,7 @@
     --verde-principal:   #1B5E20;
     --verde-mint:        #81C784;
     --verde-fondo:       #83d78a;
+    --verde-fondo-claro:       #d3fed7;
     --azul-acento:       #0277BD;
     --gris-oscuro:       #212121;   
 
@@ -33,6 +34,11 @@ html, body {
     font-size: var(--fs-titulo);
     color: var(--gris-oscuro);
     
+}
+.subtitulo{
+    font-family: var(--font-subtitulo);
+    font-size: var(--fs-subtitulo);
+    color: var(--gris-oscuro);
 }
 .contenedor {
     width: 100%;
