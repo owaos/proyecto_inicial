@@ -96,3 +96,27 @@ def ml_search_api(request):
         return JsonResponse({"ok": True, "q": q, "paging": paging, "results": results})
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
+def eco_tips(request):
+    consejos = [
+        {
+            "titulo": "Reduce el uso de plástico",
+            "descripcion": "Lleva siempre tu botella reutilizable y bolsas de tela para las compras. Evita los productos con envases innecesarios."
+        },
+        {
+            "titulo": "Ahorra energía en casa",
+            "descripcion": "Apaga las luces que no uses, desconecta aparatos en desuso y opta por bombillas LED de bajo consumo."
+        },
+        {
+            "titulo": "Recicla correctamente",
+            "descripcion": "Clasifica tus residuos y aprende qué materiales pueden reciclarse. Mantén limpios los envases antes de reciclarlos."
+        },
+        {
+            "titulo": "Prefiere el transporte sustentable",
+            "descripcion": "Camina, usa bicicleta o transporte público siempre que sea posible. Así reduces emisiones de CO₂."
+        },
+        {
+            "titulo": "Consume productos locales",
+            "descripcion": "Compra a productores de tu zona para reducir la huella de carbono del transporte y apoyar la economía local."
+        }
+    ]
+    return render(request, 'eco_tips.html', {'consejos': consejos})
