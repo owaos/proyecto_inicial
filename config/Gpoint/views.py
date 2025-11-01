@@ -32,45 +32,11 @@ def home(request):
     return render(request, 'home.html')
 def search(request):
     return render(request, 'search.html')
+# views.py
 def productos(request):
-    query = request.GET.get('busqueda', '').strip().lower()
-    if not ("producto" in query):
-        return redirect('/search/?busqueda=' + query)
-    if "producto" in query:    
-        productos = [
-            {
-                "nombre": "Guatero de semillas natural",
-                "descripcion": "Guatero relleno de semillas y hierbas aromáticas, ideal para aliviar dolores musculares o relajarse.",
-                "precio": 8990,
-                "imagen": "Gpoint/images/guatero.webp"
-            },
-            {
-                "nombre": "Bolsa de tela reutilizable",
-                "descripcion": "Bolsa de algodón resistente, ideal para compras ecológicas y reemplazar las bolsas plásticas.",
-                "precio": 4990,
-                "imagen": "Gpoint/images/bolsa_tela.jpg"
-            },
-            {
-                "nombre": "Botella de agua reutilizable",
-                "descripcion": "Botella de acero inoxidable con tapa hermética, libre de BPA, mantiene la temperatura por horas.",
-                "precio": 12990,
-                "imagen": "Gpoint/images/botella.webp"
-            },
-            {
-                "nombre": "Cepillo de bambú natural",
-                "descripcion": "Cepillo de dientes ecológico, hecho de bambú 100% biodegradable con cerdas suaves.",
-                "precio": 2990,
-                "imagen": "Gpoint/images/cepillo.png"
-            },
-            {
-                "nombre": "Bombillas metálicas reutilizables",
-                "descripcion": "Set de 4 bombillas de acero inoxidable con cepillo de limpieza y estuche de tela.",
-                "precio": 5990,
-                "imagen": "Gpoint/images/bombillas.webp"
-            },
-        ]
-
-    return render(request, 'search.html', {'productos': productos, 'query': query})
+    q = request.GET.get('busqueda', '').strip()
+    # Sin base local y sin ML: solo mostramos la página con la barra visible y, si no hay resultados, el mensaje.
+    return render(request, 'search.html', {'productos': [], 'query': q})
 
 
 def ml_health(request):
@@ -96,6 +62,7 @@ def ml_search_api(request):
         return JsonResponse({"ok": True, "q": q, "paging": paging, "results": results})
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
+    
 def eco_tips(request):
     consejos = [
         {

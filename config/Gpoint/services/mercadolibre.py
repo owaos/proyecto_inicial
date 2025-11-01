@@ -1,8 +1,9 @@
 import os
-from dotenv import load_dotenv
-load_dotenv()
 import time
 import requests
+from dotenv import load_dotenv
+load_dotenv()
+
 
 APP_ID = os.getenv("APP_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -27,6 +28,14 @@ HEADERS = {
 #######    Access token y refresh token     ##############################
 _ACCESS_TOKEN = None
 _EXPIRES_AT = 0.0
+
+def _build_url(url, params):
+    from requests import Request, Session
+    s = Session()
+    req = Request('GET', url, params=params)
+    prepped = s.prepare_request(req)
+    return prepped.url
+
 
 def _refresh_access_token():
     """Intercambia REFRESH_TOKEN por ACCESS_TOKEN y lo cachea con expiración."""
@@ -63,58 +72,87 @@ def _fetch(query: str, site_id: str, limit: int, offset: int, retries: int = 1):
     params = {"q": query, "limit": limit, "offset": offset}
     url = f"{BASE_URL}/sites/{site_id}/search"
     last_err = None
+    debug_url = _build_url(url, params)
+
+    minimal_headers = {
+        "User-Agent": UA,
+        "Accept": "application/json",
+    }
+
     for attempt in range(retries + 1):
         try:
-            r = requests.get(url, params=params, headers=_auth_headers(), timeout=12) #CAMBIADO (un poco):
-            #le agrega un token de autorizacion a cada request
-            
+            # Intento 1: sin headers (a veces no bloquea)
+            r = requests.get(url, params=params, timeout=12)
             if r.status_code in (401, 403, 429, 503):
-                if r.status_code in (401, 403):
-                    try:
-                        _refresh_access_token()
-                        print("Token de acceso actualizado automáticamente.")
-                    except Exception as e:
-                        print(f"Error al refrescar el token: {e}")
+                # Intento 2: headers mínimos
+                r = requests.get(url, params=params, headers=minimal_headers, timeout=12)
 
+            if r.status_code in (401, 403, 429, 503):
                 last_err = requests.HTTPError(f"{r.status_code} for {r.url}")
                 time.sleep(1.2 * (attempt + 1))
                 continue
 
             r.raise_for_status()
-            data = r.json()
+            data = r.json() or {}
             results = data.get("results", [])
             paging = data.get("paging", {"total": 0, "limit": limit, "offset": offset})
             paging["site_used"] = site_id
             paging["fallback"] = False
-            return results, paging, None
+            paging["debug_url"] = debug_url
+
+            if results:
+                return results, paging, None
+
+            # Plan B: domain discovery -> category_id
+            dd = requests.get(
+                f"{BASE_URL}/sites/{site_id}/domain_discovery/search",
+                params={"q": query},
+                headers=minimal_headers,
+                timeout=12
+            )
+            if dd.status_code == 200:
+                suggestions = dd.json() or []
+                # prueba hasta 3 categorías sugeridas
+                for sug in suggestions[:3]:
+                    cat = sug.get("category_id")
+                    if not cat:
+                        continue
+                    params_cat = {"category": cat, "q": query, "limit": limit, "offset": offset}
+                    debug_url_cat = _build_url(url, params_cat)
+                    r2 = requests.get(url, params=params_cat, headers=minimal_headers, timeout=12)
+                    if r2.status_code == 200:
+                        d2 = r2.json() or {}
+                        res2 = d2.get("results", [])
+                        if res2:
+                            paging["debug_url_category"] = debug_url_cat
+                            return res2, paging, None
+
+            return [], paging, None
+
         except requests.RequestException as e:
             last_err = e
             time.sleep(1.0 * (attempt + 1))
-    return [], {"total": 0, "limit": limit, "offset": offset, "site_used": site_id, "fallback": False}, last_err
+
+    return [], {"total": 0, "limit": limit, "offset": offset, "site_used": site_id, "fallback": False, "debug_url": debug_url}, last_err
+
 
 def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 24, offset: int = 0):
-    
     results, paging, err = _fetch(query, site_id, limit, offset, retries=1)
     if results:
         return results, paging
 
-
-    if paging.get("site_used") == "MLC":
+    # Fallback a MLA si no hay resultados o hubo error
+    if site_id != "MLA":
         results2, paging2, err2 = _fetch(query, "MLA", limit, offset, retries=1)
         if results2:
             paging2["fallback"] = True
             return results2, paging2
 
-    
+    # Log de error si existe (para tu terminal)
     if err:
         print(f"Error MercadoLibre [{paging.get('site_used')}]: {err}")
-    return [], paging
 
-def get_me() -> dict:
-    #Prueba real de OAuth: devuelve información del usuario del token
-    url = f"{BASE_URL}/users/me"
-    r = requests.get(url, headers=_auth_headers(), timeout=10)
-    r.raise_for_status()
-    return r.json()
+    # Sin resultados ni en fallback
+    return [], paging
 
 

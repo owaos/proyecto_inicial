@@ -1,26 +1,79 @@
 {% extends 'index.html' %}
 {% load static %}
 
-{% block title %}Inicio{% endblock %}
+{% block title %}Resultados de la búsqueda{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'Gpoint/styles/search.css' %}">
+<style>
+  /* Barra de búsqueda siempre visible en la página de resultados */
+  .search-wrapper{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: .75rem 1rem;
+  }
+  .search-bar{
+    display:flex; gap:.5rem; align-items:center; max-width:900px; margin:0 auto;
+  }
+  .search-bar input[type="text"]{
+    flex:1; padding:.65rem .8rem; border:1px solid #ccc; border-radius:.5rem;
+  }
+  .search-bar button{
+    padding:.65rem 1rem; border:0; border-radius:.5rem; background:#2e7d32; color:#fff; cursor:pointer;
+  }
+
+  .badge{ display:inline-block; padding:.15rem .5rem; border-radius:.5rem; background:#eef; color:#334; font-size:.8rem; }
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:.85rem; }
+  .card{ border:1px solid #eee; border-radius:.75rem; padding:.75rem; background:#fff; }
+  .empty{ padding:1rem; border:1px dashed #ddd; border-radius:.75rem; color:#555; background:#fafafa; }
+</style>
 {% endblock %}
 
 {% block content %}
-    <section class ="contenedor" id="section_productos">
-        <h1 class ="titulo" id="search-title">Resultados de la búsqueda</h1>
-            <div class="contenedor" id="contenedor_productos">
-                {% for producto in productos %}
-                    <div class="card_producto">
-                        <img src="{% static producto.imagen %}" alt="{{ producto.nombre }}" class="imagen_producto">
-                        <h2 class="nombre_producto">{{ producto.nombre }}</h2>
-                        <p class="descripcion_producto">{{ producto.descripcion }}</p>
-                        <p class="precio_producto">${{ producto.precio }}</p>
-                    </div>
-                {% empty %}
-                    <p>No se encontraron productos que coincidan con tu búsqueda.</p>
-                {% endfor %}
-            </div>
-    </section>
+  <!-- Barra SIEMPRE visible en resultados -->
+  <div class="search-wrapper">
+    <form class="search-bar" action="/search/productos/" method="get">
+      <input
+        type="text"
+        name="busqueda"
+        value="{{ query|default_if_none:'' }}"
+        placeholder="Buscar..."
+        autocomplete="off"
+        required
+      >
+      <button type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <section class="contenedor" id="section_productos">
+    <h1 class="titulo" id="search-title">Resultados de la búsqueda</h1>
+
+    <div class="contenedor" id="contenedor_productos">
+      {% if productos and productos|length %}
+        <div class="grid">
+          {% for producto in productos %}
+            <article class="card">
+              {% if producto.imagen %}
+                <img src="{% static producto.imagen %}" alt="{{ producto.nombre }}" class="imagen_producto" style="width:100%; height:150px; object-fit:cover; border-radius:.5rem;">
+              {% endif %}
+              <h3 style="margin:.4rem 0;">{{ producto.nombre }}</h3>
+              {% if producto.descripcion %}
+                <p class="muted">{{ producto.descripcion }}</p>
+              {% endif %}
+              {% if producto.precio %}
+                <p><strong>${{ producto.precio }}</strong></p>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No se encontraron productos que coincidan con tu búsqueda.</div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock %}
+
+
