@@ -1,32 +1,6 @@
-from django.shortcuts import render,redirect
-#from .services.mercadolibre import buscar_items
-
+from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseServerError
-import Gpoint.services.mercadolibre as ml_service
-
-
-
-#
-# def home(request):
-#     # Si el usuario no busca nada, usamos "mouse" como valor por defecto
-#     q = request.GET.get("q", "").strip() or "mouse"
-
-#     try:
-#         results, paging = buscar_items(q, limit=24, offset=int(request.GET.get("offset", 0) or 0))
-#         error = None
-#     except Exception as e:
-#         results, paging, error = [], {"total": 0, "limit": 24, "offset": 0}, str(e)
-
-#     return render(
-#         request,
-#         "home.html",
-#         {     
-#             "q": q,
-#             "results": results,
-#             "paging": paging,
-#             "error": error,
-#         },
-#     )
+from .services import mercadolibre as ml_service
 
 def home(request):
     return render(request, 'home.html')
@@ -34,10 +8,42 @@ def search(request):
     return render(request, 'search.html')
 # views.py
 def productos(request):
-    q = request.GET.get('busqueda', '').strip()
-    # Sin base local y sin ML: solo mostramos la página con la barra visible y, si no hay resultados, el mensaje.
-    return render(request, 'search.html', {'productos': [], 'query': q})
+    q = (request.GET.get('busqueda') or '').strip() or 'mouse'
+    offset = int(request.GET.get('offset') or 0)
+    limit = 24
 
+    productos = []
+    paging = {"total": 0, "limit": limit, "offset": offset}
+    error = None
+
+    try:
+        # 1) Chile (MLC) usando la ruta que evita 403
+        results, paging = ml_service.buscar_items_por_categoria(q, site_id="MLC", limit=limit, offset=offset)
+
+        # 2) Si vino vacío, Fallback a Argentina (MLA) para mostrar algo
+        if not results:
+            results, paging = ml_service.buscar_items_por_categoria(q, site_id="MLA", limit=limit, offset=offset)
+            paging["fallback"] = True
+
+        # 3) Mapear al template
+        for item in results:
+            thumb = (item.get("secure_thumbnail") or item.get("thumbnail") or "").replace("http://", "https://")
+            productos.append({
+                "nombre": item.get("title") or "",
+                "descripcion": "",
+                "precio": item.get("price"),
+                "imagen_url": thumb,          # search.html ya usa imagen_url
+                "permalink": item.get("permalink") or "",
+            })
+    except Exception as e:
+        error = str(e)
+
+    return render(request, "search.html", {
+        "productos": productos,
+        "query": q,
+        "paging": paging,
+        "error": error
+    })
 
 def ml_health(request):
     """
