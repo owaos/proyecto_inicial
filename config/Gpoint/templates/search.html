@@ -5,31 +5,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'Gpoint/styles/search.css' %}">
-<style>
-  /* Barra de búsqueda siempre visible en la página de resultados */
-  .search-wrapper{
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: .75rem 1rem;
-  }
-  .search-bar{
-    display:flex; gap:.5rem; align-items:center; max-width:900px; margin:0 auto;
-  }
-  .search-bar input[type="text"]{
-    flex:1; padding:.65rem .8rem; border:1px solid #ccc; border-radius:.5rem;
-  }
-  .search-bar button{
-    padding:.65rem 1rem; border:0; border-radius:.5rem; background:#2e7d32; color:#fff; cursor:pointer;
-  }
-
-  .badge{ display:inline-block; padding:.15rem .5rem; border-radius:.5rem; background:#eef; color:#334; font-size:.8rem; }
-  .grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:.85rem; }
-  .card{ border:1px solid #eee; border-radius:.75rem; padding:.75rem; background:#fff; }
-  .empty{ padding:1rem; border:1px dashed #ddd; border-radius:.75rem; color:#555; background:#fafafa; }
-</style>
 {% endblock %}
 
 {% block content %}

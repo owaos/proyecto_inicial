@@ -99,8 +99,49 @@ def get_me():
 
 # ===================== BÚSQUEDA RÁPIDA (API) =====================
 # la usa /api/ml/search/ en tu views.py
+def es_ecologico(item):
+    palabras_clave = [
+        "ecológico", "eco", "reciclado", "reciclable", "orgánico",
+        "reutilizable", "sustentable", "natural", "bambú", "biodegradable",
+        "sin plástico", "sin plastico", "vegano", "compostable", "amigable",
+        "ecofriendly", "sostenible", "verde", "biológico"
+    ]
 
-def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 24, offset: int = 0):
+    palabras_excluir = [
+        "eléctrico", "plástico", "pilas", "batería", "descartable",
+        "desechable", "no reciclable", "motor", "combustión"
+    ]
+
+    texto = " ".join([
+        item.get("name", ""),
+        item.get("title", ""),
+        item.get("subtitle", "") or "",
+        item.get("domain_id", "") or "",
+        item.get("category_id", "") or "",
+    ]).lower()
+    if any(p in texto for p in palabras_clave):
+        if not any(p in texto for p in palabras_excluir):
+            return True
+
+    # ✅ Revisión en atributos
+    for attr in item.get("attributes", []):
+        nombre = attr.get("name", "").lower()
+        valor = str(attr.get("value_name", "")).lower()
+        if any(p in valor or p in nombre for p in palabras_clave):
+            if not any(bad in valor for bad in palabras_excluir):
+                return True
+    materiales = [
+        "madera", "bambú", "acero inoxidable", "vidrio", "cartón", "papel", "algodón"
+    ]
+    for attr in item.get("attributes", []):
+        valor = str(attr.get("value_name", "")).lower()
+        if any(m in valor for m in materiales):
+            return True
+
+    return False
+
+
+def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 10, offset: int = 0):
     """
     Versión reducida:
     1) intenta en el sitio pedido, autenticado
@@ -116,8 +157,10 @@ def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 24, offse
         data = r.json() or {}
         results = data.get("results", [])
         if results:
+
+            results = [item for item in results if es_ecologico(item)]
             return results, {
-                "total": data.get("paging", {}).get("total", len(results)),
+                "total": len(results),
                 "limit": limit,
                 "offset": offset,
                 "site_used": site_id,
@@ -279,7 +322,8 @@ def buscar_items_por_categoria(query: str, site_id: str = "MLC", limit: int = 24
         # normalizar
         if permalink.startswith("http://"):
             permalink = "https://" + permalink[len("http://"):]
-
+        if not es_ecologico(pj):
+            continue
         items_out.append({
             "title": title,
             "price": price,
