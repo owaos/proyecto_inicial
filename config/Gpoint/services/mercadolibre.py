@@ -98,58 +98,68 @@ def get_me():
 
 
 # ===================== BÚSQUEDA RÁPIDA (API) =====================
-# la usa /api/ml/search/ en tu views.py
+
 def es_ecologico(item):
-    palabras_clave = [
-        "ecológico", "eco", "reciclado", "reciclable", "orgánico",
-        "reutilizable", "sustentable", "natural", "bambú", "biodegradable",
-        "sin plástico", "sin plastico", "vegano", "compostable", "amigable",
-        "ecofriendly", "sostenible", "verde", "biológico"
-    ]
+    
+    tags = item.get("tags", []) or []
+    if any("sustentable" in t.lower() or "sustainable" in t.lower() for t in tags):
+        return True
 
-    palabras_excluir = [
-        "eléctrico", "plástico", "pilas", "batería", "descartable",
-        "desechable", "no reciclable", "motor", "combustión"
-    ]
-
-    texto = " ".join([
-        item.get("name", ""),
-        item.get("title", ""),
-        item.get("subtitle", "") or "",
-        item.get("domain_id", "") or "",
-        item.get("category_id", "") or "",
-    ]).lower()
-    if any(p in texto for p in palabras_clave):
-        if not any(p in texto for p in palabras_excluir):
-            return True
-
-    # ✅ Revisión en atributos
     for attr in item.get("attributes", []):
         nombre = attr.get("name", "").lower()
         valor = str(attr.get("value_name", "")).lower()
-        if any(p in valor or p in nombre for p in palabras_clave):
-            if not any(bad in valor for bad in palabras_excluir):
+        if "sustentable" in nombre or "sustainable" in nombre:
+            if valor in ["sí", "si", "yes", "true"]:
                 return True
-    materiales = [
-        "madera", "bambú", "acero inoxidable", "vidrio", "cartón", "papel", "algodón"
+
+    
+    palabras_clave = [
+        "ecológico", "eco ", "eco-", "ecoamigable", "eco friendly", "reciclado",
+        "reciclable", "orgánico", "reutilizable", "sustentable", "natural",
+        "bambú", "biodegradable", "sin plástico", "sin plastico", "vegano",
+        "compostable", "amigable con el medio ambiente", "sostenible", "verde", "biológico"
     ]
-    for attr in item.get("attributes", []):
-        valor = str(attr.get("value_name", "")).lower()
-        if any(m in valor for m in materiales):
+
+    palabras_excluir = [
+        "motor", "combustión", "gasolina", "diesel", "petroleo",
+        "descartable", "desechable", "no reciclable"
+    ]
+
+    materiales_sustentables = [
+        "bambú", "madera", "acero inoxidable", "vidrio", "cartón", "papel", "algodón", "lino","acero","metal","vidrio","papel kraft",
+        "fibra natural", "cáñamo", "yute", "corcho", "cerámica", "ceramica", "plástico reciclado", "bioplástico", "bioplastico", "silicona"
+    ]
+
+    texto = " ".join(filter(None, [
+        item.get("name", ""),
+        item.get("title", ""),
+        item.get("subtitle", ""),
+        item.get("domain_id", ""),
+        item.get("category_id", ""),
+    ])).lower()
+
+    for attr in (item.get("attributes") or []):
+        texto += " " + str(attr.get("name", "")).lower()
+        texto += " " + str(attr.get("value_name", "")).lower()
+
+    if any(exclu in texto for exclu in palabras_excluir):
+        return False
+
+    if any(p in texto for p in palabras_clave):
+        return True
+
+    if any(m in texto for m in materiales_sustentables):
+        if not any(exclu in texto for exclu in palabras_excluir):
             return True
 
     return False
 
 
-def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 10, offset: int = 0):
-    """
-    Versión reducida:
-    1) intenta en el sitio pedido, autenticado
-    2) si falla o viene vacío y estamos en MLC, prueba MLA
-    sin probar 9 variantes que te alargaban el tiempo. 
-    """
+def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 24, offset: int = 0):
+    
     path = f"/sites/{site_id}/search"
-    params = {"q": query, "limit": limit, "offset": offset}
+    test_limit = limit * 4
+    params = {"q": query, "limit": test_limit, "offset": offset}
 
     # 1) intento principal
     try:
@@ -157,9 +167,10 @@ def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 10, offse
         data = r.json() or {}
         results = data.get("results", [])
         if results:
-
-            results = [item for item in results if es_ecologico(item)]
-            return results, {
+            eco_results = [item for item in results if es_ecologico(item)]
+            eco_results = eco_results[:limit]
+            
+            return eco_results, {
                 "total": len(results),
                 "limit": limit,
                 "offset": offset,
@@ -199,21 +210,18 @@ def buscar_items(query: str, site_id: str = DEFAULT_SITE, limit: int = 10, offse
 
 
 # ===================== BÚSQUEDA POR CATEGORÍA (la que usa tu template) =====================
-# la usa views.productos → search.html
-
-BASE_URL = "https://api.mercadolibre.com"
-
-
-
-
-# asumo que ya tienes esto en el archivo:
-# def _auth_headers(): ...
-# def _paging_empty(...): ...
 
 
 BASE_URL = "https://api.mercadolibre.com"
 
-def buscar_items_por_categoria(query: str, site_id: str = "MLC", limit: int = 24, offset: int = 0):
+
+
+
+
+
+BASE_URL = "https://api.mercadolibre.com"
+
+def buscar_items_por_categoria(query: str, site_id: str = "MLC", limit: int =12, offset: int = 0):
     """
     Muestra SOLO productos que efectivamente tienen un item publicado en ML.
     Usa solo los endpoints que vimos que te dan 200:
@@ -322,7 +330,10 @@ def buscar_items_por_categoria(query: str, site_id: str = "MLC", limit: int = 24
         # normalizar
         if permalink.startswith("http://"):
             permalink = "https://" + permalink[len("http://"):]
-        if not es_ecologico(pj):
+        pj_completo = dict(pj)
+        pj_completo["attributes"] = first.get("attributes", []) or pj.get("attributes", [])
+
+        if not es_ecologico(pj_completo):
             continue
         items_out.append({
             "title": title,
@@ -341,17 +352,6 @@ def buscar_items_por_categoria(query: str, site_id: str = "MLC", limit: int = 24
         "used_query": query,
     }
     return items_out, paging
-
-
-def _paging_empty(site_id, query, limit, offset):
-    return {
-        "total": 0,
-        "limit": limit,
-        "offset": offset,
-        "site_used": site_id,
-        "fallback": False,
-        "used_query": query,
-    }
 
 
 def _paging_empty(site_id, query, limit, offset):
